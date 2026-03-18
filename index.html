@@ -1,0 +1,649 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Argira Vision — Tus ojos en sonido</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0a0f;
+    --surface: #13131a;
+    --border: #1e1e2e;
+    --text: #e8e8f0;
+    --muted: #6b6b8a;
+    --vision: #7c9dff;
+    --vision-glow: rgba(124,157,255,0.15);
+    --green: #4ade80;
+    --warn: #f59e0b;
+    --danger: #f87171;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 24px 16px 48px;
+  }
+
+  /* Header */
+  .header {
+    text-align: center;
+    margin-bottom: 32px;
+    width: 100%;
+    max-width: 540px;
+  }
+
+  .logo {
+    font-size: 2.2rem;
+    margin-bottom: 6px;
+    animation: pulse-eye 3s ease-in-out infinite;
+  }
+
+  @keyframes pulse-eye {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.08); }
+  }
+
+  .title {
+    font-size: 1.6rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    color: var(--text);
+  }
+
+  .title span {
+    color: var(--vision);
+  }
+
+  .subtitle {
+    font-size: 0.82rem;
+    color: var(--muted);
+    margin-top: 4px;
+    font-family: 'DM Mono', monospace;
+    letter-spacing: 0.04em;
+  }
+
+  /* API Key */
+  .api-section {
+    width: 100%;
+    max-width: 540px;
+    margin-bottom: 20px;
+  }
+
+  .api-toggle {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    font-size: 0.78rem;
+    color: var(--muted);
+    margin-bottom: 8px;
+    user-select: none;
+  }
+
+  .api-toggle input[type="checkbox"] { accent-color: var(--vision); }
+
+  .api-input {
+    width: 100%;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 10px 14px;
+    color: var(--text);
+    font-family: 'DM Mono', monospace;
+    font-size: 0.78rem;
+    outline: none;
+    transition: border 0.2s;
+    display: none;
+  }
+
+  .api-input:focus { border-color: var(--vision); }
+  .api-input.visible { display: block; }
+
+  /* Upload zone */
+  .upload-zone {
+    width: 100%;
+    max-width: 540px;
+    border: 2px dashed var(--border);
+    border-radius: 20px;
+    padding: 40px 20px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.25s;
+    background: var(--surface);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .upload-zone:hover, .upload-zone.dragover {
+    border-color: var(--vision);
+    background: var(--vision-glow);
+  }
+
+  .upload-zone .icon {
+    font-size: 3rem;
+    margin-bottom: 12px;
+    display: block;
+  }
+
+  .upload-zone p {
+    font-size: 0.9rem;
+    color: var(--muted);
+    line-height: 1.5;
+  }
+
+  .upload-zone p strong {
+    color: var(--vision);
+    display: block;
+    font-size: 1rem;
+    margin-bottom: 4px;
+  }
+
+  input[type="file"] { display: none; }
+
+  /* Preview */
+  .preview-wrap {
+    width: 100%;
+    max-width: 540px;
+    margin-top: 16px;
+    display: none;
+    position: relative;
+  }
+
+  .preview-wrap img {
+    width: 100%;
+    border-radius: 16px;
+    border: 1px solid var(--border);
+    display: block;
+  }
+
+  .preview-wrap .change-btn {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: rgba(10,10,15,0.85);
+    border: 1px solid var(--border);
+    color: var(--muted);
+    padding: 4px 10px;
+    border-radius: 99px;
+    font-size: 0.7rem;
+    cursor: pointer;
+    font-family: 'DM Sans', sans-serif;
+  }
+
+  /* Analyze button */
+  .analyze-btn {
+    width: 100%;
+    max-width: 540px;
+    margin-top: 16px;
+    padding: 16px;
+    background: var(--vision);
+    color: #0a0a0f;
+    border: none;
+    border-radius: 14px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 1rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: none;
+  }
+
+  .analyze-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(124,157,255,0.3); }
+  .analyze-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+  .analyze-btn.visible { display: block; }
+
+  /* Loader */
+  .loader {
+    width: 100%;
+    max-width: 540px;
+    margin-top: 20px;
+    text-align: center;
+    display: none;
+  }
+
+  .loader.visible { display: block; }
+
+  .photon-wrap {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    margin-bottom: 10px;
+  }
+
+  .photon {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--vision);
+    animation: photon 1.2s ease-in-out infinite;
+  }
+
+  .photon:nth-child(2) { animation-delay: 0.2s; }
+  .photon:nth-child(3) { animation-delay: 0.4s; }
+
+  @keyframes photon {
+    0%, 100% { opacity: 0.2; transform: scale(0.8); }
+    50% { opacity: 1; transform: scale(1.2); }
+  }
+
+  .loader p {
+    font-size: 0.8rem;
+    color: var(--muted);
+    font-family: 'DM Mono', monospace;
+  }
+
+  /* Result */
+  .result-box {
+    width: 100%;
+    max-width: 540px;
+    margin-top: 20px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 24px;
+    display: none;
+  }
+
+  .result-box.visible { display: block; }
+
+  .result-label {
+    font-size: 0.68rem;
+    font-family: 'DM Mono', monospace;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--vision);
+    margin-bottom: 12px;
+  }
+
+  .result-text {
+    font-size: 1rem;
+    line-height: 1.7;
+    color: var(--text);
+    white-space: pre-wrap;
+  }
+
+  /* Voice controls */
+  .voice-controls {
+    display: flex;
+    gap: 10px;
+    margin-top: 20px;
+    flex-wrap: wrap;
+  }
+
+  .voice-btn {
+    flex: 1;
+    min-width: 120px;
+    padding: 12px 16px;
+    border-radius: 12px;
+    border: 1.5px solid var(--vision);
+    background: transparent;
+    color: var(--vision);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+  }
+
+  .voice-btn:hover { background: var(--vision-glow); }
+  .voice-btn.playing { background: var(--vision); color: #0a0a0f; }
+  .voice-btn.stop { border-color: var(--danger); color: var(--danger); }
+  .voice-btn.stop:hover { background: rgba(248,113,113,0.1); }
+
+  /* Speed control */
+  .speed-wrap {
+    width: 100%;
+    margin-top: 12px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .speed-wrap label {
+    font-size: 0.75rem;
+    color: var(--muted);
+    white-space: nowrap;
+    font-family: 'DM Mono', monospace;
+  }
+
+  .speed-wrap input[type="range"] {
+    flex: 1;
+    accent-color: var(--vision);
+  }
+
+  .speed-val {
+    font-size: 0.75rem;
+    color: var(--vision);
+    font-family: 'DM Mono', monospace;
+    min-width: 32px;
+  }
+
+  /* Reset */
+  .reset-btn {
+    background: none;
+    border: none;
+    color: var(--muted);
+    font-size: 0.78rem;
+    cursor: pointer;
+    margin-top: 16px;
+    font-family: 'DM Sans', sans-serif;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+
+  /* Footer */
+  .footer {
+    margin-top: 48px;
+    text-align: center;
+    font-size: 0.7rem;
+    color: var(--muted);
+    font-family: 'DM Mono', monospace;
+    line-height: 1.8;
+  }
+
+  .footer a { color: var(--vision); text-decoration: none; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="logo">👁️</div>
+  <div class="title">Argira <span>Vision</span></div>
+  <div class="subtitle">entra fotón · sale voz · prototype v0.2</div>
+</div>
+
+<!-- API Key -->
+<div class="api-section">
+  <label class="api-toggle">
+    <input type="checkbox" id="ai-toggle" onchange="toggleApiInput()">
+    Activar Claude Vision (IA) — descripción inteligente del entorno
+  </label>
+  <input type="password" id="api-key" class="api-input" placeholder="sk-ant-...  API key de Claude">
+</div>
+
+<!-- Upload -->
+<div class="upload-zone" id="upload-zone"
+  onclick="document.getElementById('file-input').click()"
+  ondragover="handleDragOver(event)"
+  ondragleave="handleDragLeave(event)"
+  ondrop="handleDrop(event)">
+  <span class="icon">📷</span>
+  <p>
+    <strong>Sube una foto · Upload a photo</strong>
+    Toca para abrir cámara o galería<br>
+    Tap to open camera or gallery
+  </p>
+  <input type="file" id="file-input" accept="image/*" capture="environment" onchange="handleFile(event)">
+</div>
+
+<!-- Preview -->
+<div class="preview-wrap" id="preview-wrap">
+  <img id="preview-img" src="" alt="Imagen cargada">
+  <button class="change-btn" onclick="resetAll()">✕ Cambiar</button>
+</div>
+
+<!-- Analyze -->
+<button class="analyze-btn" id="analyze-btn" onclick="analyze()">
+  👁️ Analizar entorno · Analyze environment
+</button>
+
+<!-- Loader -->
+<div class="loader" id="loader">
+  <div class="photon-wrap">
+    <div class="photon"></div>
+    <div class="photon"></div>
+    <div class="photon"></div>
+  </div>
+  <p>fotón en proceso · processing photon…</p>
+</div>
+
+<!-- Result -->
+<div class="result-box" id="result-box">
+  <div class="result-label">🔊 Descripción del entorno · Environment description</div>
+  <div class="result-text" id="result-text"></div>
+
+  <div class="voice-controls">
+    <button class="voice-btn" id="play-btn" onclick="speakResult()">
+      🔊 Leer en voz alta · Read aloud
+    </button>
+    <button class="voice-btn stop" id="stop-btn" onclick="stopSpeech()" style="display:none;">
+      ⏹ Detener · Stop
+    </button>
+  </div>
+
+  <div class="speed-wrap" id="speed-wrap">
+    <label>Velocidad · Speed</label>
+    <input type="range" id="speed" min="0.5" max="2" step="0.1" value="0.9" oninput="updateSpeed()">
+    <span class="speed-val" id="speed-val">0.9x</span>
+  </div>
+
+  <button class="reset-btn" onclick="resetAll()">← Nueva foto · New photo</button>
+</div>
+
+<div class="footer">
+  Argira Vision v0.2 · Jose Ranero García · Argira Station 2026<br>
+  DOI: <a href="https://doi.org/10.5281/zenodo.18989036" target="_blank">10.5281/zenodo.18989036</a><br>
+  <a href="https://argira2030.github.io/argira-shield/" target="_blank">Argira Shield</a> ·
+  <a href="https://argira2030.github.io/argira-verifica/" target="_blank">Verifica.</a>
+</div>
+
+<script>
+let imageBase64 = null;
+let imageMediaType = 'image/jpeg';
+let speechUtterance = null;
+let isSpeaking = false;
+
+function toggleApiInput() {
+  const cb = document.getElementById('ai-toggle');
+  const inp = document.getElementById('api-key');
+  inp.classList.toggle('visible', cb.checked);
+}
+
+function handleDragOver(e) {
+  e.preventDefault();
+  document.getElementById('upload-zone').classList.add('dragover');
+}
+
+function handleDragLeave(e) {
+  document.getElementById('upload-zone').classList.remove('dragover');
+}
+
+function handleDrop(e) {
+  e.preventDefault();
+  document.getElementById('upload-zone').classList.remove('dragover');
+  const file = e.dataTransfer.files[0];
+  if (file && file.type.startsWith('image/')) processFile(file);
+}
+
+function handleFile(e) {
+  const file = e.target.files[0];
+  if (file) processFile(file);
+}
+
+function processFile(file) {
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    const dataUrl = e.target.result;
+    // Convert to JPEG via canvas — handles HEIC, WebP, PNG, any format
+    const img = new Image();
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      const MAX = 1280;
+      let w = img.width, h = img.height;
+      if (w > MAX) { h = Math.round(h * MAX / w); w = MAX; }
+      if (h > MAX) { w = Math.round(w * MAX / h); h = MAX; }
+      canvas.width = w;
+      canvas.height = h;
+      canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+      const jpegUrl = canvas.toDataURL('image/jpeg', 0.85);
+      imageBase64 = jpegUrl.split(',')[1];
+      imageMediaType = 'image/jpeg';
+
+      document.getElementById('preview-img').src = jpegUrl;
+      document.getElementById('preview-wrap').style.display = 'block';
+      document.getElementById('upload-zone').style.display = 'none';
+      document.getElementById('analyze-btn').classList.add('visible');
+      document.getElementById('result-box').classList.remove('visible');
+      document.getElementById('result-text').textContent = '';
+    };
+    img.src = dataUrl;
+  };
+  reader.readAsDataURL(file);
+}
+
+async function analyze() {
+  if (!imageBase64) return;
+
+  const aiEnabled = document.getElementById('ai-toggle').checked;
+  const apiKey = document.getElementById('api-key').value.trim();
+
+  document.getElementById('analyze-btn').disabled = true;
+  document.getElementById('loader').classList.add('visible');
+  document.getElementById('result-box').classList.remove('visible');
+
+  if (aiEnabled && apiKey) {
+    await analyzeWithClaude(apiKey);
+  } else {
+    analyzeOffline();
+  }
+
+  document.getElementById('loader').classList.remove('visible');
+  document.getElementById('analyze-btn').disabled = false;
+}
+
+async function analyzeWithClaude(apiKey) {
+  const prompt = `Eres los ojos de una persona ciega. Describe esta imagen de forma clara, directa y útil para orientarse en el espacio.
+
+Indica:
+1. Dónde estás — tipo de lugar (interior, exterior, calle, habitación, etc.)
+2. Obstáculos — qué hay y aproximadamente dónde (izquierda, derecha, delante, cerca, lejos)
+3. Peligros — escaleras, bordillos, objetos en el suelo, puertas abiertas
+4. Personas u objetos relevantes
+5. Luz y condiciones generales
+
+Sé breve, claro y concreto. No digas "en la imagen se ve" — habla directamente como si describieras el entorno real a alguien que no puede verlo. Máximo 120 palabras.`;
+
+  try {
+    const response = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-api-key': apiKey, 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-access': 'true' },
+      body: JSON.stringify({
+        model: 'claude-opus-4-5',
+        max_tokens: 300,
+        messages: [{
+          role: 'user',
+          content: [
+            { type: 'image', source: { type: 'base64', media_type: imageMediaType, data: imageBase64 } },
+            { type: 'text', text: prompt }
+          ]
+        }]
+      })
+    });
+
+    const data = await response.json();
+    console.log('API response:', JSON.stringify(data));
+    if (data.content && data.content[0] && data.content[0].text) {
+      showResult(data.content[0].text);
+    } else if (data.error) {
+      showResult('Error API: ' + data.error.message);
+    } else {
+      showResult('Error al procesar la imagen. Respuesta: ' + JSON.stringify(data).substring(0, 200));
+    }
+  } catch (err) {
+    showResult('Error de conexión. Comprueba tu conexión e inténtalo de nuevo.');
+  }
+}
+
+function analyzeOffline() {
+  const el = document.getElementById('result-text');
+  el.innerHTML = '<span style="color:var(--vision);font-weight:600;">👁️ Argira Vision necesita Claude para ver.</span>\n\n' +
+    'Para analizar imágenes necesitas una API key de Claude.\n\n' +
+    '<strong style="color:var(--text);">Cómo obtenerla — es gratis:</strong>\n' +
+    '1. Ve a <a href="https://console.anthropic.com" target="_blank" style="color:var(--vision);">console.anthropic.com</a>\n' +
+    '2. Crea una cuenta\n' +
+    '3. Genera una API key\n' +
+    '4. Pégala arriba y activa Claude Vision\n\n' +
+    '<span style="color:var(--muted);font-size:0.85rem;">Anthropic ofrece créditos gratuitos para empezar.</span>';
+  document.getElementById('result-box').classList.add('visible');
+  document.getElementById('play-btn').style.display = 'none';
+  document.getElementById('speed-wrap').style.display = 'none';
+}
+
+function showResult(text) {
+  document.getElementById('result-text').textContent = text;
+  document.getElementById('result-box').classList.add('visible');
+  document.getElementById('play-btn').style.display = 'flex';
+  document.getElementById('speed-wrap').style.display = 'flex';
+}
+
+function speakResult() {
+  if (isSpeaking) return;
+  const text = document.getElementById('result-text').textContent;
+  if (!text) return;
+
+  const speed = parseFloat(document.getElementById('speed').value);
+  speechUtterance = new SpeechSynthesisUtterance(text);
+  speechUtterance.lang = 'es-ES';
+  speechUtterance.rate = speed;
+
+  speechUtterance.onstart = () => {
+    isSpeaking = true;
+    document.getElementById('play-btn').classList.add('playing');
+    document.getElementById('play-btn').textContent = '🔊 Leyendo...';
+    document.getElementById('stop-btn').style.display = 'flex';
+  };
+
+  speechUtterance.onend = () => {
+    isSpeaking = false;
+    document.getElementById('play-btn').classList.remove('playing');
+    document.getElementById('play-btn').innerHTML = '🔊 Leer en voz alta · Read aloud';
+    document.getElementById('stop-btn').style.display = 'none';
+  };
+
+  window.speechSynthesis.speak(speechUtterance);
+}
+
+function stopSpeech() {
+  window.speechSynthesis.cancel();
+  isSpeaking = false;
+  document.getElementById('play-btn').classList.remove('playing');
+  document.getElementById('play-btn').innerHTML = '🔊 Leer en voz alta · Read aloud';
+  document.getElementById('stop-btn').style.display = 'none';
+}
+
+function updateSpeed() {
+  const val = document.getElementById('speed').value;
+  document.getElementById('speed-val').textContent = val + 'x';
+  if (isSpeaking) {
+    stopSpeech();
+    speakResult();
+  }
+}
+
+function resetAll() {
+  stopSpeech();
+  imageBase64 = null;
+  document.getElementById('file-input').value = '';
+  document.getElementById('preview-wrap').style.display = 'none';
+  document.getElementById('preview-img').src = '';
+  document.getElementById('upload-zone').style.display = 'flex';
+  document.getElementById('analyze-btn').classList.remove('visible');
+  document.getElementById('result-box').classList.remove('visible');
+  document.getElementById('result-text').textContent = '';
+}
+</script>
+</body>
+</html>
