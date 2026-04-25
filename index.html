@@ -2,648 +2,1087 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Argira Vision — Tus ojos en sonido</title>
+<link rel="manifest" id="pwa-manifest">
+<meta name="theme-color" content="#0a0a0f">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Argira Vision">
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
-  :root {
-    --bg: #0a0a0f;
-    --surface: #13131a;
-    --border: #1e1e2e;
-    --text: #e8e8f0;
-    --muted: #6b6b8a;
-    --vision: #7c9dff;
-    --vision-glow: rgba(124,157,255,0.15);
-    --green: #4ade80;
-    --warn: #f59e0b;
-    --danger: #f87171;
-  }
+:root {
+  --bg: #0a0a0f;
+  --surface: #13131a;
+  --surface2: #1a1a24;
+  --border: #1e1e2e;
+  --text: #e8e8f0;
+  --muted: #6b6b8a;
+  --vision: #7c9dff;
+  --vision-glow: rgba(124,157,255,0.12);
+  --green: #4ade80;
+  --warn: #f59e0b;
+  --danger: #f87171;
+  --sonnet: #a78bfa;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'DM Sans', sans-serif;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 24px 16px 120px;
+}
 
-  * { box-sizing: border-box; margin: 0; padding: 0; }
+/* ── Skip link accesibilidad ── */
+.skip-link {
+  position: absolute; top: -40px; left: 0; background: var(--vision);
+  color: #0a0a0f; padding: 8px 16px; border-radius: 0 0 8px 0;
+  font-weight: 700; font-size: 0.9rem; z-index: 999;
+  transition: top .2s;
+}
+.skip-link:focus { top: 0; }
 
-  body {
-    background: var(--bg);
-    color: var(--text);
-    font-family: 'DM Sans', sans-serif;
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding: 24px 16px 48px;
-  }
+/* ── Header ── */
+.header { text-align: center; margin-bottom: 28px; width: 100%; max-width: 560px; }
+.logo { font-size: 2.4rem; animation: pulse-eye 3s ease-in-out infinite; }
+@keyframes pulse-eye { 0%,100%{transform:scale(1)} 50%{transform:scale(1.08)} }
+.title { font-size: 1.7rem; font-weight: 700; letter-spacing: -0.02em; }
+.title span { color: var(--vision); }
+.subtitle { font-size: 0.78rem; color: var(--muted); margin-top: 4px; font-family:'DM Mono',monospace; letter-spacing:.04em; }
+.header-btns { display:flex; justify-content:center; gap:8px; margin-top:12px; flex-wrap:wrap; }
+.hbtn {
+  background: none; border: 1px solid var(--border); color: var(--muted);
+  font-family:'DM Mono',monospace; font-size:0.7rem; padding:8px 14px;
+  border-radius:99px; cursor:pointer; transition:all .2s; min-height:44px;
+}
+.hbtn:hover { border-color:var(--vision); color:var(--vision); }
+.hbtn:focus-visible { outline:3px solid var(--vision); outline-offset:3px; }
 
-  /* Header */
-  .header {
-    text-align: center;
-    margin-bottom: 32px;
-    width: 100%;
-    max-width: 540px;
-  }
+/* ── Banner key guardada ── */
+.key-banner {
+  width:100%; max-width:560px; background:rgba(74,222,128,0.08);
+  border:1px solid rgba(74,222,128,0.25); border-radius:12px;
+  padding:12px 16px; margin-bottom:14px; display:none;
+  align-items:center; gap:10px; flex-wrap:wrap;
+}
+.key-banner.visible { display:flex; }
+.key-banner-text { flex:1; font-size:0.8rem; color:var(--green); font-family:'DM Mono',monospace; line-height:1.5; }
+.key-forget-btn {
+  background:none; border:1px solid rgba(248,113,113,0.4); color:var(--danger);
+  font-family:'DM Mono',monospace; font-size:0.7rem; padding:5px 10px;
+  border-radius:8px; cursor:pointer; white-space:nowrap; min-height:36px;
+}
+.key-forget-btn:hover { background:rgba(248,113,113,0.08); }
+.key-forget-btn:focus-visible { outline:3px solid var(--danger); outline-offset:2px; }
 
-  .logo {
-    font-size: 2.2rem;
-    margin-bottom: 6px;
-    animation: pulse-eye 3s ease-in-out infinite;
-  }
+/* ── Panel configuración ── */
+.config-panel {
+  width:100%; max-width:560px; background:var(--surface);
+  border:1px solid var(--border); border-radius:16px; padding:18px;
+  margin-bottom:18px; display:flex; flex-direction:column; gap:14px;
+}
+.config-toggle-row {
+  display:flex; align-items:center; justify-content:space-between; cursor:pointer;
+}
+.config-toggle-label { font-size:0.75rem; color:var(--muted); font-family:'DM Mono',monospace; }
+.config-chevron { color:var(--muted); font-size:0.8rem; transition:transform .2s; }
+.config-chevron.open { transform:rotate(180deg); }
+.config-body { display:flex; flex-direction:column; gap:14px; }
+.config-body.collapsed { display:none; }
+.config-row { display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
+.config-label { font-size:0.75rem; color:var(--muted); font-family:'DM Mono',monospace; white-space:nowrap; min-width:110px; }
 
-  @keyframes pulse-eye {
-    0%, 100% { transform: scale(1); }
-    50% { transform: scale(1.08); }
-  }
+.model-toggle,.length-toggle { display:flex; gap:6px; flex:1; }
+.model-btn,.length-btn {
+  flex:1; padding:10px 12px; border-radius:8px; border:1.5px solid var(--border);
+  background:transparent; color:var(--muted); font-family:'DM Sans',sans-serif;
+  font-size:0.78rem; font-weight:600; cursor:pointer; transition:all .2s; min-height:44px;
+}
+.model-btn.active-haiku { border-color:var(--vision); color:var(--vision); background:var(--vision-glow); }
+.model-btn.active-sonnet { border-color:var(--sonnet); color:var(--sonnet); background:rgba(167,139,250,0.1); }
+.length-btn.active { border-color:var(--green); color:var(--green); background:rgba(74,222,128,0.08); }
+.model-btn:focus-visible,.length-btn:focus-visible { outline:3px solid var(--vision); outline-offset:2px; }
 
-  .title {
-    font-size: 1.6rem;
-    font-weight: 700;
-    letter-spacing: -0.02em;
-    color: var(--text);
-  }
+.voice-select {
+  flex:1; background:var(--surface2); border:1px solid var(--border);
+  border-radius:8px; color:var(--text); font-family:'DM Mono',monospace;
+  font-size:0.75rem; padding:10px; outline:none; cursor:pointer; min-height:44px;
+}
+.voice-select:focus { border-color:var(--vision); outline:2px solid var(--vision); }
 
-  .title span {
-    color: var(--vision);
-  }
+.speed-wrap { width:100%; display:flex; align-items:center; gap:10px; }
+.speed-wrap label { font-size:0.72rem; color:var(--muted); white-space:nowrap; font-family:'DM Mono',monospace; }
+.speed-wrap input[type="range"] { flex:1; accent-color:var(--vision); height:24px; cursor:pointer; }
+.speed-val { font-size:0.72rem; color:var(--vision); font-family:'DM Mono',monospace; min-width:36px; }
 
-  .subtitle {
-    font-size: 0.82rem;
-    color: var(--muted);
-    margin-top: 4px;
-    font-family: 'DM Mono', monospace;
-    letter-spacing: 0.04em;
-  }
+/* ── Sección API key (primer uso) ── */
+.api-section { width:100%; max-width:560px; margin-bottom:16px; }
+.api-setup-box {
+  background:var(--surface); border:1px solid var(--border); border-radius:16px;
+  padding:20px; display:flex; flex-direction:column; gap:14px;
+}
+.api-setup-title { font-size:0.9rem; font-weight:600; color:var(--text); }
+.api-setup-desc { font-size:0.8rem; color:var(--muted); line-height:1.65; }
+.api-setup-desc a { color:var(--vision); text-decoration:underline; }
+.api-steps { list-style:none; display:flex; flex-direction:column; gap:8px; }
+.api-steps li {
+  font-size:0.78rem; color:var(--muted); display:flex; gap:10px; align-items:flex-start;
+  line-height:1.5;
+}
+.api-steps li .step-num {
+  background:var(--vision); color:#0a0a0f; font-weight:700; font-size:0.65rem;
+  border-radius:50%; width:20px; height:20px; display:flex; align-items:center;
+  justify-content:center; flex-shrink:0; margin-top:1px;
+}
+.api-key-row { display:flex; gap:8px; }
+.api-input {
+  flex:1; background:var(--surface2); border:1.5px solid var(--border);
+  border-radius:10px; padding:12px 14px; color:var(--text);
+  font-family:'DM Mono',monospace; font-size:0.82rem; outline:none; transition:border .2s;
+  min-height:48px;
+}
+.api-input:focus { border-color:var(--vision); }
+.api-save-btn {
+  background:var(--vision); color:#0a0a0f; border:none; border-radius:10px;
+  font-family:'DM Sans',sans-serif; font-size:0.85rem; font-weight:700;
+  padding:12px 18px; cursor:pointer; transition:all .2s; white-space:nowrap; min-height:48px;
+}
+.api-save-btn:hover { opacity:.85; }
+.api-save-btn:focus-visible { outline:3px solid white; outline-offset:2px; }
+.api-read-guide-btn {
+  background:none; border:1px solid var(--vision); color:var(--vision);
+  border-radius:10px; font-family:'DM Sans',sans-serif; font-size:0.82rem;
+  padding:10px 14px; cursor:pointer; transition:all .2s; min-height:44px;
+}
+.api-read-guide-btn:hover { background:var(--vision-glow); }
+.api-read-guide-btn:focus-visible { outline:3px solid var(--vision); outline-offset:2px; }
 
-  /* API Key */
-  .api-section {
-    width: 100%;
-    max-width: 540px;
-    margin-bottom: 20px;
-  }
+/* ── Upload ── */
+.upload-zone {
+  width:100%; max-width:560px; border:2px dashed var(--border);
+  border-radius:20px; padding:44px 20px; text-align:center; cursor:pointer;
+  transition:all .25s; background:var(--surface); display:flex;
+  flex-direction:column; align-items:center; min-height:180px; justify-content:center;
+}
+.upload-zone:hover,.upload-zone.dragover { border-color:var(--vision); background:var(--vision-glow); }
+.upload-zone:focus-visible { outline:3px solid var(--vision); outline-offset:3px; }
+.upload-zone .icon { font-size:3.2rem; margin-bottom:14px; }
+.upload-zone p { font-size:0.9rem; color:var(--muted); line-height:1.65; }
+.upload-zone p strong { color:var(--vision); display:block; font-size:1.05rem; margin-bottom:4px; }
+input[type="file"] { display:none; }
 
-  .api-toggle {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    cursor: pointer;
-    font-size: 0.78rem;
-    color: var(--muted);
-    margin-bottom: 8px;
-    user-select: none;
-  }
+/* ── Preview ── */
+.preview-wrap { width:100%; max-width:560px; margin-top:14px; display:none; position:relative; }
+.preview-wrap img { width:100%; border-radius:16px; border:1px solid var(--border); display:block; }
+.change-btn {
+  position:absolute; top:10px; right:10px; background:rgba(10,10,15,0.85);
+  border:1px solid var(--border); color:var(--muted); padding:6px 12px;
+  border-radius:99px; font-size:0.72rem; cursor:pointer; font-family:'DM Sans',sans-serif;
+  min-height:36px;
+}
+.change-btn:focus-visible { outline:3px solid var(--vision); outline-offset:2px; }
 
-  .api-toggle input[type="checkbox"] { accent-color: var(--vision); }
+/* ── Analyze btn ── */
+.analyze-btn {
+  width:100%; max-width:560px; margin-top:14px; padding:18px;
+  background:var(--vision); color:#0a0a0f; border:none; border-radius:14px;
+  font-family:'DM Sans',sans-serif; font-size:1.05rem; font-weight:700;
+  cursor:pointer; transition:all .2s; display:none; min-height:56px;
+}
+.analyze-btn:hover:not(:disabled) { transform:translateY(-2px); box-shadow:0 8px 24px rgba(124,157,255,0.3); }
+.analyze-btn:disabled { opacity:.6; cursor:not-allowed; }
+.analyze-btn.visible { display:block; }
+.analyze-btn:focus-visible { outline:3px solid white; outline-offset:3px; }
 
-  .api-input {
-    width: 100%;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    padding: 10px 14px;
-    color: var(--text);
-    font-family: 'DM Mono', monospace;
-    font-size: 0.78rem;
-    outline: none;
-    transition: border 0.2s;
-    display: none;
-  }
+/* ── Loader ── */
+.loader { width:100%; max-width:560px; margin-top:18px; text-align:center; display:none; }
+.loader.visible { display:block; }
+.photon-wrap { display:flex; align-items:center; justify-content:center; gap:12px; margin-bottom:10px; }
+.photon { width:11px; height:11px; border-radius:50%; background:var(--vision); animation:photon 1.2s ease-in-out infinite; }
+.photon:nth-child(2){animation-delay:.2s} .photon:nth-child(3){animation-delay:.4s}
+@keyframes photon { 0%,100%{opacity:.2;transform:scale(.8)} 50%{opacity:1;transform:scale(1.2)} }
+.loader p { font-size:0.78rem; color:var(--muted); font-family:'DM Mono',monospace; }
 
-  .api-input:focus { border-color: var(--vision); }
-  .api-input.visible { display: block; }
+/* ── Result ── */
+.result-box {
+  width:100%; max-width:560px; margin-top:18px; background:var(--surface);
+  border:1px solid var(--border); border-radius:20px; padding:22px; display:none;
+}
+.result-box.visible { display:block; }
+.result-box.is-error { border-color:rgba(248,113,113,0.3); background:rgba(248,113,113,0.04); }
+.result-label { font-size:0.68rem; font-family:'DM Mono',monospace; text-transform:uppercase; letter-spacing:.1em; color:var(--vision); margin-bottom:12px; }
+.result-box.is-error .result-label { color:var(--danger); }
+.result-text { font-size:1rem; line-height:1.8; color:var(--text); white-space:pre-wrap; }
 
-  /* Upload zone */
-  .upload-zone {
-    width: 100%;
-    max-width: 540px;
-    border: 2px dashed var(--border);
-    border-radius: 20px;
-    padding: 40px 20px;
-    text-align: center;
-    cursor: pointer;
-    transition: all 0.25s;
-    background: var(--surface);
-    position: relative;
-    overflow: hidden;
-  }
+.voice-controls { display:flex; gap:8px; margin-top:18px; flex-wrap:wrap; }
+.voice-btn {
+  flex:1; min-width:90px; padding:13px 14px; border-radius:12px;
+  border:1.5px solid var(--vision); background:transparent; color:var(--vision);
+  font-family:'DM Sans',sans-serif; font-size:0.85rem; font-weight:600;
+  cursor:pointer; transition:all .2s; display:flex; align-items:center;
+  justify-content:center; gap:5px; min-height:48px;
+}
+.voice-btn:hover { background:var(--vision-glow); }
+.voice-btn.playing { background:var(--vision); color:#0a0a0f; }
+.voice-btn.pause-btn { border-color:var(--warn); color:var(--warn); }
+.voice-btn.pause-btn:hover { background:rgba(245,158,11,0.1); }
+.voice-btn.stop-btn { border-color:var(--danger); color:var(--danger); }
+.voice-btn.stop-btn:hover { background:rgba(248,113,113,0.1); }
+.voice-btn.copy-btn { border-color:var(--muted); color:var(--muted); }
+.voice-btn.copy-btn:hover { border-color:var(--green); color:var(--green); }
+.voice-btn:focus-visible { outline:3px solid var(--vision); outline-offset:2px; }
 
-  .upload-zone:hover, .upload-zone.dragover {
-    border-color: var(--vision);
-    background: var(--vision-glow);
-  }
+.reset-btn {
+  background:none; border:none; color:var(--muted); font-size:0.8rem;
+  cursor:pointer; margin-top:16px; font-family:'DM Sans',sans-serif;
+  text-decoration:underline; text-underline-offset:3px; min-height:36px; padding:4px 0;
+}
+.reset-btn:focus-visible { outline:3px solid var(--vision); outline-offset:2px; border-radius:4px; }
 
-  .upload-zone .icon {
-    font-size: 3rem;
-    margin-bottom: 12px;
-    display: block;
-  }
-
-  .upload-zone p {
-    font-size: 0.9rem;
-    color: var(--muted);
-    line-height: 1.5;
-  }
-
-  .upload-zone p strong {
-    color: var(--vision);
-    display: block;
-    font-size: 1rem;
-    margin-bottom: 4px;
-  }
-
-  input[type="file"] { display: none; }
-
-  /* Preview */
-  .preview-wrap {
-    width: 100%;
-    max-width: 540px;
-    margin-top: 16px;
-    display: none;
-    position: relative;
-  }
-
-  .preview-wrap img {
-    width: 100%;
-    border-radius: 16px;
-    border: 1px solid var(--border);
-    display: block;
-  }
-
-  .preview-wrap .change-btn {
-    position: absolute;
-    top: 10px;
-    right: 10px;
-    background: rgba(10,10,15,0.85);
-    border: 1px solid var(--border);
-    color: var(--muted);
-    padding: 4px 10px;
-    border-radius: 99px;
-    font-size: 0.7rem;
-    cursor: pointer;
-    font-family: 'DM Sans', sans-serif;
-  }
-
-  /* Analyze button */
-  .analyze-btn {
-    width: 100%;
-    max-width: 540px;
-    margin-top: 16px;
-    padding: 16px;
-    background: var(--vision);
-    color: #0a0a0f;
-    border: none;
-    border-radius: 14px;
-    font-family: 'DM Sans', sans-serif;
-    font-size: 1rem;
-    font-weight: 700;
-    cursor: pointer;
-    transition: all 0.2s;
-    display: none;
-  }
-
-  .analyze-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(124,157,255,0.3); }
-  .analyze-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
-  .analyze-btn.visible { display: block; }
-
-  /* Loader */
-  .loader {
-    width: 100%;
-    max-width: 540px;
-    margin-top: 20px;
-    text-align: center;
-    display: none;
-  }
-
-  .loader.visible { display: block; }
-
-  .photon-wrap {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 12px;
-    margin-bottom: 10px;
-  }
-
-  .photon {
-    width: 10px;
-    height: 10px;
-    border-radius: 50%;
-    background: var(--vision);
-    animation: photon 1.2s ease-in-out infinite;
-  }
-
-  .photon:nth-child(2) { animation-delay: 0.2s; }
-  .photon:nth-child(3) { animation-delay: 0.4s; }
-
-  @keyframes photon {
-    0%, 100% { opacity: 0.2; transform: scale(0.8); }
-    50% { opacity: 1; transform: scale(1.2); }
-  }
-
-  .loader p {
-    font-size: 0.8rem;
-    color: var(--muted);
-    font-family: 'DM Mono', monospace;
-  }
-
-  /* Result */
-  .result-box {
-    width: 100%;
-    max-width: 540px;
-    margin-top: 20px;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 20px;
-    padding: 24px;
-    display: none;
-  }
-
-  .result-box.visible { display: block; }
-
-  .result-label {
-    font-size: 0.68rem;
-    font-family: 'DM Mono', monospace;
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
-    color: var(--vision);
-    margin-bottom: 12px;
-  }
-
-  .result-text {
-    font-size: 1rem;
-    line-height: 1.7;
-    color: var(--text);
-    white-space: pre-wrap;
-  }
-
-  /* Voice controls */
-  .voice-controls {
-    display: flex;
-    gap: 10px;
-    margin-top: 20px;
-    flex-wrap: wrap;
-  }
-
-  .voice-btn {
-    flex: 1;
-    min-width: 120px;
-    padding: 12px 16px;
-    border-radius: 12px;
-    border: 1.5px solid var(--vision);
-    background: transparent;
-    color: var(--vision);
-    font-family: 'DM Sans', sans-serif;
-    font-size: 0.85rem;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.2s;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 6px;
-  }
-
-  .voice-btn:hover { background: var(--vision-glow); }
-  .voice-btn.playing { background: var(--vision); color: #0a0a0f; }
-  .voice-btn.stop { border-color: var(--danger); color: var(--danger); }
-  .voice-btn.stop:hover { background: rgba(248,113,113,0.1); }
-
-  /* Speed control */
-  .speed-wrap {
-    width: 100%;
-    margin-top: 12px;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-  }
-
-  .speed-wrap label {
-    font-size: 0.75rem;
-    color: var(--muted);
-    white-space: nowrap;
-    font-family: 'DM Mono', monospace;
-  }
-
-  .speed-wrap input[type="range"] {
-    flex: 1;
-    accent-color: var(--vision);
-  }
-
-  .speed-val {
-    font-size: 0.75rem;
-    color: var(--vision);
-    font-family: 'DM Mono', monospace;
-    min-width: 32px;
-  }
-
-  /* Reset */
-  .reset-btn {
-    background: none;
-    border: none;
-    color: var(--muted);
-    font-size: 0.78rem;
-    cursor: pointer;
-    margin-top: 16px;
-    font-family: 'DM Sans', sans-serif;
-    text-decoration: underline;
-    text-underline-offset: 3px;
-  }
-
-  /* Footer */
-  .footer {
-    margin-top: 48px;
-    text-align: center;
-    font-size: 0.7rem;
-    color: var(--muted);
-    font-family: 'DM Mono', monospace;
-    line-height: 1.8;
-  }
-
-  .footer a { color: var(--vision); text-decoration: none; }
+/* ── Historial ── */
+.history-section { width:100%; max-width:560px; margin-top:24px; }
+.history-title {
+  font-size:0.72rem; font-family:'DM Mono',monospace; text-transform:uppercase;
+  letter-spacing:.1em; color:var(--muted); margin-bottom:12px;
+  display:flex; justify-content:space-between; align-items:center;
+}
+.history-clear {
+  background:none; border:none; color:var(--danger); font-size:0.7rem;
+  cursor:pointer; font-family:'DM Mono',monospace; min-height:36px; padding:4px 8px;
+}
+.history-clear:focus-visible { outline:3px solid var(--danger); outline-offset:2px; border-radius:4px; }
+.history-list { display:flex; flex-direction:column; gap:8px; }
+.history-item {
+  background:var(--surface); border:1px solid var(--border); border-radius:12px;
+  padding:12px 14px; display:flex; align-items:center; gap:12px; cursor:pointer;
+  transition:border-color .2s;
+}
+.history-item:hover { border-color:var(--vision); }
+.history-item:focus-visible { outline:3px solid var(--vision); outline-offset:2px; border-radius:12px; }
+.history-thumb { width:48px; height:48px; border-radius:8px; object-fit:cover; flex-shrink:0; background:var(--surface2); }
+.history-info { flex:1; min-width:0; }
+.history-date { font-size:0.65rem; color:var(--muted); font-family:'DM Mono',monospace; margin-bottom:3px; }
+.history-desc { font-size:0.8rem; color:var(--text); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.history-play {
+  background:none; border:none; color:var(--vision); font-size:1.2rem;
+  cursor:pointer; padding:8px; 9:1px solid var(--green); color:var(--green);
+  font-family:'DM Mono',monospace; font-size:0.78rem; padding:10px 20px;
+  border-radius:99px; opacity:0; transition:all .3s; pointer-events:none; z-index:200;
+  white-space:nowrap; max-width:90vw; text-align:center;
+}
+.toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
+.toast.error { border-color:var(--danger); color:var(--danger); }
 </style>
 </head>
 <body>
 
-<div class="header">
-  <div class="logo">👁️</div>
-  <div class="title">Argira <span>Vision</span></div>
-  <div class="subtitle">entra fotón · sale voz · prototype v0.2</div>
-</div>
+<!-- Skip link para teclado/lector -->
+<a href="#main-action" class="skip-link">Saltar al área principal</a>
 
-<!-- API Key -->
-<div class="api-section">
-  <label class="api-toggle">
-    <input type="checkbox" id="ai-toggle" onchange="toggleApiInput()">
-    Activar Claude Vision (IA) — descripción inteligente del entorno
-  </label>
-  <input type="password" id="api-key" class="api-input" placeholder="sk-ant-...  API key de Claude">
-</div>
-
-<!-- Upload -->
-<div class="upload-zone" id="upload-zone"
-  onclick="document.getElementById('file-input').click()"
-  ondragover="handleDragOver(event)"
-  ondragleave="handleDragLeave(event)"
-  ondrop="handleDrop(event)">
-  <span class="icon">📷</span>
-  <p>
-    <strong>Sube una foto · Upload a photo</strong>
-    Toca para abrir cámara o galería<br>
-    Tap to open camera or gallery
+<!-- ── Header ── -->
+<header class="header">
+  <div class="logo" aria-hidden="true">👁️</div>
+  <h1 class="title">Argira <span>Vision</span></h1>
+  <p class="subtitle">entra fotón · sale voz · prototype v0.5</p>
+  <nav class="header-btns" aria-label="Acciones rápidas">
+    <button class="hbtn" onclick="readInterface()" aria-label="Leer el estado actual de la interfaz en voz alta">🔈 Leer interfaz</button>
+    <button class="hbtn" onclick="toggleHistory()" aria-label="Mostrar u ocultar historial de análisis">📋 Historial</button>
+    <button class="hbtn" onclick="readGuide()" aria-label="Escuchar la guía de uso paso a paso">❓ Ayuda</button>
+  </nav>
+</header>
+<div style="background: #f59e0b20; border-left: 4px solid #f59e0b; border-radius: 12px; padding: 12px 16px; margin-bottom: 20px; width: 100%; max-width: 560px;">
+  <p style="margin: 0; font-size: 0.85rem; font-weight: 500; color: #f59e0b;">⚠️ <strong>Modo autónomo con tu propia API key</strong></p>
+  <p style="margin: 6px 0 0; font-size: 0.75rem; color: var(--muted);">
+    Esta versión requiere que <strong>introduzcas tu clave de Anthropic</strong> (se guarda en tu navegador). 
+    Si eres una persona ciega y quieres probarlo sin configuración, 
+    <a href="#" style="color: var(--vision); text-decoration: underline;">contacta con el autor</a> o espera la próxima versión con acceso directo.
   </p>
-  <input type="file" id="file-input" accept="image/*" capture="environment" onchange="handleFile(event)">
+</div>
+<!-- ── Banner key guardada ── -->
+<div class="key-banner" id="key-banner" role="status" aria-live="polite">
+  <span class="key-banner-text" id="key-banner-text">✅ Claude Vision activo — key guardada en este dispositivo</span>
+  <button class="key-forget-btn" onclick="forgetKey()" aria-label="Olvidar la API key guardada y desactivar Claude Vision">🗑 Olvidar key</button>
 </div>
 
-<!-- Preview -->
-<div class="preview-wrap" id="preview-wrap">
-  <img id="preview-img" src="" alt="Imagen cargada">
-  <button class="change-btn" onclick="resetAll()">✕ Cambiar</button>
-</div>
+<!-- ── Config (colapsable) ── -->
+<section class="config-panel" aria-label="Configuración de análisis">
+  <div class="config-toggle-row" role="button" tabindex="0" aria-expanded="false"
+    id="config-toggle" onclick="toggleConfig()" onkeydown="if(event.key==='Enter'||event.key===' ')toggleConfig()"
+    aria-label="Configuración: modelo, descripción, voz y velocidad. Toca para expandir o colapsar.">
+    <span class="config-toggle-label">⚙️ Configuración</span>
+    <span class="config-chevron" id="config-chevron" aria-hidden="true">▼</span>
+  </div>
+  <div class="config-body collapsed" id="config-body">
+    <div class="config-row">
+      <span class="config-label" id="label-modelo">Modelo IA</span>
+      <div class="model-toggle" role="group" aria-labelledby="label-modelo">
+        <button class="model-btn active-haiku" id="btn-haiku" onclick="selectModel('haiku')"
+          aria-pressed="true" aria-label="Haiku, rápido y económico">⚡ Haiku</button>
+        <button class="model-btn" id="btn-sonnet" onclick="selectModel('sonnet')"
+          aria-pressed="false" aria-label="Sonnet, más preciso">✨ Sonnet</button>
+      </div>
+    </div>
+    <div class="config-row">
+      <span class="config-label" id="label-desc">Descripción</span>
+      <div class="length-toggle" role="group" aria-labelledby="label-desc">
+        <button class="length-btn active" id="btn-breve" onclick="selectLength('breve')"
+          aria-pressed="true" aria-label="Breve, máximo 60 palabras">🎯 Breve</button>
+        <button class="length-btn" id="btn-detallada" onclick="selectLength('detallada')"
+          aria-pressed="false" aria-label="Detallada, máximo 150 palabras">📝 Detallada</button>
+      </div>
+    </div>
+    <div class="config-row">
+      <label class="config-label" for="voice-select">Voz</label>
+      <select class="voice-select" id="voice-select" onchange="updateVoice()"
+        aria-label="Seleccionar voz de lectura"></select>
+    </div>
+    <div class="speed-wrap">
+      <label for="speed">Velocidad</label>
+      <input type="range" id="speed" min="0.5" max="2" step="0.1" value="0.9"
+        oninput="updateSpeed()" aria-label="Velocidad de lectura" aria-valuetext="0.9 veces">
+      <span class="speed-val" id="speed-val" aria-live="polite">0.9x</span>
+    </div>
+  </div>
+</section>
 
-<!-- Analyze -->
-<button class="analyze-btn" id="analyze-btn" onclick="analyze()">
-  👁️ Analizar entorno · Analyze environment
+<!-- ── Sección API key (solo si no hay key guardada) ── -->
+<section class="api-section" id="api-section" aria-label="Configuración de API key" aria-live="polite">
+  <div class="api-setup-box">
+    <h2 class="api-setup-title">🔑 Conecta Claude Vision</h2>
+    <p class="api-setup-desc">
+      Necesitas una API key de Anthropic. Es gratuita para empezar.<br>
+      <strong>¿Eres usuario con discapacidad visual?</strong> Toca el botón
+      <em>"Escuchar cómo obtener la key"</em> para recibir instrucciones por voz.
+    </p>
+    <button class="api-read-guide-btn" onclick="readKeyGuide()"
+      aria-label="Escuchar instrucciones de voz para obtener la API key">
+      🔈 Escuchar cómo obtener la key
+    </button>
+    <ol class="api-steps" aria-label="Pasos para obtener la API key">
+      <li><span class="step-num" aria-hidden="true">1</span>Ve a console.anthropic.com en tu navegador</li>
+      <li><span class="step-num" aria-hidden="true">2</span>Crea una cuenta gratuita con tu email</li>
+      <li><span class="step-num" aria-hidden="true">3</span>En el menú, busca "API Keys" y crea una nueva</li>
+      <li><span class="step-num" aria-hidden="true">4</span>Copia la key (empieza por sk-ant-) y pégala abajo</li>
+    </ol>
+    <div class="api-key-row">
+      <input type="password" id="api-key" class="api-input"
+        placeholder="sk-ant-... pega tu API key aquí"
+        aria-label="Campo para introducir tu API key de Claude. Pega aquí la key copiada de console.anthropic.com"
+        autocomplete="off"
+        aria-describedby="api-key-hint">
+      <button class="api-save-btn" onclick="saveKey()"
+        aria-label="Guardar la API key en este dispositivo">
+        Guardar
+      </button>
+    </div>
+    <p id="api-key-hint" style="font-size:0.7rem;color:var(--muted);font-family:'DM Mono',monospace;margin-top:6px;line-height:1.5;">
+      Tu key se guarda solo en este dispositivo. Nunca se envía a ningún servidor externo excepto Anthropic.
+    </p>
+  </div>
+</section>
+
+<!-- ── Área principal ── -->
+<main id="main-action" aria-label="Área principal de análisis">
+
+  <!-- Upload -->
+  <div class="upload-zone" id="upload-zone"
+    role="button" tabindex="0"
+    aria-label="Subir foto para analizar. Toca para abrir la cámara o la galería de imágenes"
+    onclick="triggerUpload()"
+    onkeydown="if(event.key==='Enter'||event.key===' ')triggerUpload()"
+    ondragover="handleDragOver(event)"
+    ondragleave="handleDragLeave(event)"
+    ondrop="handleDrop(event)">
+    <span class="icon" aria-hidden="true">📷</span>
+    <p>
+      <strong>Sube una foto · Upload a photo</strong>
+      Toca para abrir cámara o galería<br>
+      Tap to open camera or gallery
+    </p>
+    <input type="file" id="file-input" accept="image/*" capture="environment"
+      aria-label="Seleccionar imagen desde cámara o galería"
+      onchange="handleFile(event)">
+  </div>
+
+  <!-- Preview -->
+  <div class="preview-wrap" id="preview-wrap">
+    <img id="preview-img" src="" alt="Imagen cargada lista para analizar">
+    <button class="change-btn" onclick="resetAll()" aria-label="Cambiar imagen, volver al inicio">✕ Cambiar</button>
+  </div>
+
+  <!-- Analyze -->
+  <button class="analyze-btn" id="analyze-btn" onclick="analyze()"
+    aria-label="Analizar el entorno de la imagen con Claude Vision">
+    👁️ Analizar entorno · Analyze environment
+  </button>
+
+  <!-- Loader -->
+  <div class="loader" id="loader" aria-live="assertive" aria-label="Analizando imagen, por favor espera">
+    <div class="photon-wrap" aria-hidden="true">
+      <div class="photon"></div><div class="photon"></div><div class="photon"></div>
+    </div>
+    <p id="loader-text">fotón en proceso · processing photon…</p>
+  </div>
+
+  <!-- Result -->
+  <div class="result-box" id="result-box"
+    role="status" aria-live="polite" aria-atomic="true"
+    aria-label="Resultado del análisis">
+    <div class="result-label" id="result-label">🔊 Descripción del entorno</div>
+    <div class="result-text" id="result-text"></div>
+    <div class="voice-controls" role="group" aria-label="Controles de voz">
+      <button class="voice-btn" id="play-btn" onclick="speakResult()"
+        aria-label="Leer descripción en voz alta">🔊 Leer</button>
+      <button class="voice-btn pause-btn" id="pause-btn" onclick="pauseSpeech()"
+        aria-label="Pausar lectura" style="display:none">⏸ Pausa</button>
+      <button class="voice-btn stop-btn" id="stop-btn" onclick="stopSpeech()"
+        aria-label="Detener lectura" style="display:none">⏹ Stop</button>
+      <button class="voice-btn copy-btn" onclick="copyResult()"
+        aria-label="Copiar descripción al portapapeles">📋 Copiar</button>
+    </div>
+    <button class="reset-btn" onclick="resetAll()" aria-label="Volver al inicio para analizar una nueva foto">
+      ← Nueva foto · New photo
+    </button>
+  </div>
+
+</main>
+
+<!-- ── Historial ── -->
+<section class="history-section" id="history-section" style="display:none" aria-label="Historial de análisis">
+  <div class="history-title">
+    Historial · últimas 10
+    <button class="history-clear" onclick="clearHistory()" aria-label="Borrar todo el historial de análisis">Borrar todo</button>
+  </div>
+  <div class="history-list" id="history-list" role="list"></div>
+</section>
+
+<!-- ── Botón flotante ── -->
+<button class="float-btn" id="float-btn" onclick="toggleFloatSpeak()"
+  aria-label="Repetir el último análisis en voz alta"
+  title="Repetir último análisis">
+  🔊
 </button>
 
-<!-- Loader -->
-<div class="loader" id="loader">
-  <div class="photon-wrap">
-    <div class="photon"></div>
-    <div class="photon"></div>
-    <div class="photon"></div>
-  </div>
-  <p>fotón en proceso · processing photon…</p>
-</div>
+<!-- ── Toast ── -->
+<div class="toast" id="toast" role="alert" aria-live="assertive" aria-atomic="true"></div>
 
-<!-- Result -->
-<div class="result-box" id="result-box">
-  <div class="result-label">🔊 Descripción del entorno · Environment description</div>
-  <div class="result-text" id="result-text"></div>
-
-  <div class="voice-controls">
-    <button class="voice-btn" id="play-btn" onclick="speakResult()">
-      🔊 Leer en voz alta · Read aloud
-    </button>
-    <button class="voice-btn stop" id="stop-btn" onclick="stopSpeech()" style="display:none;">
-      ⏹ Detener · Stop
-    </button>
-  </div>
-
-  <div class="speed-wrap" id="speed-wrap">
-    <label>Velocidad · Speed</label>
-    <input type="range" id="speed" min="0.5" max="2" step="0.1" value="0.9" oninput="updateSpeed()">
-    <span class="speed-val" id="speed-val">0.9x</span>
-  </div>
-
-  <button class="reset-btn" onclick="resetAll()">← Nueva foto · New photo</button>
-</div>
-
-<div class="footer">
-  Argira Vision v0.2 · Jose Ranero García · Argira Station 2026<br>
-  DOI: <a href="https://doi.org/10.5281/zenodo.18989036" target="_blank">10.5281/zenodo.18989036</a><br>
-  <a href="https://argira2030.github.io/argira-shield/" target="_blank">Argira Shield</a> ·
-  <a href="https://argira2030.github.io/argira-verifica/" target="_blank">Verifica.</a>
-</div>
+<footer class="footer">
+  Argira Vision v0.5 · Jose Ranero García · Argira Station 2026<br>
+  DOI: <a href="https://doi.org/10.5281/zenodo.18989036" target="_blank" rel="noopener">10.5281/zenodo.18989036</a><br>
+  <a href="https://argira2030.github.io/argira-shield/" target="_blank" rel="noopener">Argira Shield</a> ·
+  <a href="https://argira2030.github.io/argira-verifica/" target="_blank" rel="noopener">Verifica.</a>
+</footer>
 
 <script>
+// ═══════════════════════════════════════════════════════════
+// ESTADO GLOBAL
+// ═══════════════════════════════════════════════════════════
 let imageBase64 = null;
 let imageMediaType = 'image/jpeg';
-let speechUtterance = null;
-let isSpeaking = false;
+let lastResult = '';
+let selectedModel = 'haiku';
+let selectedLength = 'breve';
+let speechRate = 0.9;
+let selectedVoiceURI = null;
+let utter = null;
+let isSpeakingGlobal = false;
+let isPausedGlobal = false;
+let availableVoices = [];
+let configOpen = false;
 
-function toggleApiInput() {
-  const cb = document.getElementById('ai-toggle');
-  const inp = document.getElementById('api-key');
-  inp.classList.toggle('visible', cb.checked);
+// ═══════════════════════════════════════════════════════════
+// INICIO — leer key guardada
+// ═══════════════════════════════════════════════════════════
+function init() {
+  loadVoices();
+  updateSpeed();
+  loadPreferences();
+  const savedKey = localStorage.getItem('argira_api_key');
+  if (savedKey) {
+    showKeyActive(savedKey);
+  } else {
+    showKeySetup();
+  }
+  renderHistory();
+  // Primer uso: guía de bienvenida automática
+  if (!localStorage.getItem('argira_seen_v5')) {
+    localStorage.setItem('argira_seen_v5', '1');
+    setTimeout(() => {
+      speakText('Bienvenido a Argira Vision versión cero punto cinco. Toca el botón Ayuda para escuchar cómo configurar la aplicación. Si ya tienes una API key, toca Escuchar cómo obtener la key para recibir instrucciones completas por voz.');
+    }, 800);
+  }
 }
 
-function handleDragOver(e) {
-  e.preventDefault();
-  document.getElementById('upload-zone').classList.add('dragover');
+// ═══════════════════════════════════════════════════════════
+// GESTIÓN DE LA API KEY
+// ═══════════════════════════════════════════════════════════
+function showKeyActive(key) {
+  // Key guardada: ocultar formulario, mostrar banner verde
+  document.getElementById('api-section').style.display = 'none';
+  document.getElementById('key-banner').classList.add('visible');
+  document.getElementById('key-banner-text').textContent =
+    '✅ Claude Vision activo — key guardada en este dispositivo';
 }
 
-function handleDragLeave(e) {
-  document.getElementById('upload-zone').classList.remove('dragover');
+function showKeySetup() {
+  document.getElementById('api-section').style.display = 'block';
+  document.getElementById('key-banner').classList.remove('visible');
 }
 
+function saveKey() {
+  const input = document.getElementById('api-key');
+  const key = input.value.trim();
+  if (!key || !key.startsWith('sk-ant-')) {
+    showToast('⚠️ La key debe empezar por sk-ant-', 3000, true);
+    speakText('La clave no parece válida. Debe empezar por sk-ant-. Comprueba que la has copiado completa.');
+    return;
+  }
+  localStorage.setItem('argira_api_key', key);
+  input.value = '';
+  showKeyActive(key);
+  showToast('✅ Key guardada. Claude Vision activo.', 2500);
+  speakText('Perfecto. La API key ha sido guardada. Ya puedes subir una foto y analizarla. Toca el área de la cámara para empezar.');
+}
+
+function forgetKey() {
+  localStorage.removeItem('argira_api_key');
+  showKeySetup();
+  showToast('🗑 Key olvidada', 2000);
+  speakText('La API key ha sido eliminada de este dispositivo. Puedes introducir una nueva cuando quieras.');
+}
+
+function getSavedKey() {
+  return localStorage.getItem('argira_api_key') || '';
+}
+
+// ═══════════════════════════════════════════════════════════
+// PREFERENCIAS
+// ═══════════════════════════════════════════════════════════
+function loadPreferences() {
+  const prefs = JSON.parse(localStorage.getItem('argira_prefs') || '{}');
+  if (prefs.model) selectModel(prefs.model);
+  if (prefs.length) selectLength(prefs.length);
+  if (prefs.rate) {
+    document.getElementById('speed').value = prefs.rate;
+    speechRate = parseFloat(prefs.rate);
+    document.getElementById('speed-val').textContent = prefs.rate + 'x';
+  }
+}
+
+function savePreferences() {
+  localStorage.setItem('argira_prefs', JSON.stringify({
+    model: selectedModel,
+    length: selectedLength,
+    rate: speechRate
+  }));
+}
+
+// ═══════════════════════════════════════════════════════════
+// VOCES TTS
+// ═══════════════════════════════════════════════════════════
+function loadVoices() {
+  const voices = window.speechSynthesis.getVoices();
+  if (!voices.length) { setTimeout(loadVoices, 100); return; }
+  availableVoices = voices;
+  const sel = document.getElementById('voice-select');
+  const prevVal = sel.value;
+  sel.innerHTML = '';
+  const esVoices = voices.filter(v => v.lang.startsWith('es'));
+  const others = voices.filter(v => !v.lang.startsWith('es'));
+  const addGroup = (label, list) => {
+    if (!list.length) return;
+    const g = document.createElement('optgroup');
+    g.label = label;
+    list.forEach(v => {
+      const o = document.createElement('option');
+      o.value = v.voiceURI;
+      o.textContent = `${v.name} (${v.lang})`;
+      g.appendChild(o);
+    });
+    sel.appendChild(g);
+  };
+  addGroup('Español', esVoices);
+  addGroup('Otras', others.slice(0, 12));
+  // Restaurar selección o elegir primera española
+  if (prevVal && [...sel.options].some(o => o.value === prevVal)) {
+    sel.value = prevVal;
+    selectedVoiceURI = prevVal;
+  } else if (esVoices.length) {
+    sel.value = esVoices[0].voiceURI;
+    selectedVoiceURI = esVoices[0].voiceURI;
+  }
+}
+if (typeof speechSynthesis !== 'undefined') {
+  speechSynthesis.onvoiceschanged = loadVoices;
+}
+
+function updateVoice() {
+  selectedVoiceURI = document.getElementById('voice-select').value;
+}
+
+function updateSpeed() {
+  speechRate = parseFloat(document.getElementById('speed').value);
+  document.getElementById('speed-val').textContent = speechRate.toFixed(1) + 'x';
+  document.getElementById('speed').setAttribute('aria-valuetext', speechRate.toFixed(1) + ' veces');
+}
+
+// ═══════════════════════════════════════════════════════════
+// CONFIGURACIÓN
+// ═══════════════════════════════════════════════════════════
+function toggleConfig() {
+  configOpen = !configOpen;
+  document.getElementById('config-body').classList.toggle('collapsed', !configOpen);
+  document.getElementById('config-chevron').classList.toggle('open', configOpen);
+  document.getElementById('config-toggle').setAttribute('aria-expanded', configOpen);
+}
+
+function selectModel(m) {
+  selectedModel = m;
+  document.getElementById('btn-haiku').classList.toggle('active-haiku', m === 'haiku');
+  document.getElementById('btn-haiku').setAttribute('aria-pressed', m === 'haiku');
+  document.getElementById('btn-sonnet').classList.toggle('active-sonnet', m === 'sonnet');
+  document.getElementById('btn-sonnet').setAttribute('aria-pressed', m === 'sonnet');
+  savePreferences();
+}
+
+function selectLength(l) {
+  selectedLength = l;
+  document.getElementById('btn-breve').classList.toggle('active', l === 'breve');
+  document.getElementById('btn-breve').setAttribute('aria-pressed', l === 'breve');
+  document.getElementById('btn-detallada').classList.toggle('active', l === 'detallada');
+  document.getElementById('btn-detallada').setAttribute('aria-pressed', l === 'detallada');
+  savePreferences();
+}
+
+// ═══════════════════════════════════════════════════════════
+// DRAG & DROP / UPLOAD
+// ═══════════════════════════════════════════════════════════
+function triggerUpload() { document.getElementById('file-input').click(); }
+function handleDragOver(e) { e.preventDefault(); document.getElementById('upload-zone').classList.add('dragover'); }
+function handleDragLeave() { document.getElementById('upload-zone').classList.remove('dragover'); }
 function handleDrop(e) {
   e.preventDefault();
   document.getElementById('upload-zone').classList.remove('dragover');
   const file = e.dataTransfer.files[0];
-  if (file && file.type.startsWith('image/')) processFile(file);
+  if (file && file.type.startsWith('image/')) processImageFile(file);
 }
+function handleFile(e) { if (e.target.files[0]) processImageFile(e.target.files[0]); }
 
-function handleFile(e) {
-  const file = e.target.files[0];
-  if (file) processFile(file);
-}
-
-function processFile(file) {
+function processImageFile(file) {
   const reader = new FileReader();
-  reader.onload = (e) => {
-    const dataUrl = e.target.result;
-    // Convert to JPEG via canvas — handles HEIC, WebP, PNG, any format
+  reader.onload = (ev) => {
     const img = new Image();
     img.onload = () => {
       const canvas = document.createElement('canvas');
-      const MAX = 1280;
+      const MAX = 800;
       let w = img.width, h = img.height;
-      if (w > MAX) { h = Math.round(h * MAX / w); w = MAX; }
-      if (h > MAX) { w = Math.round(w * MAX / h); h = MAX; }
-      canvas.width = w;
-      canvas.height = h;
-      canvas.getContext('2d').drawImage(img, 0, 0, w, h);
-      const jpegUrl = canvas.toDataURL('image/jpeg', 0.85);
+      if (w > h) { if (w > MAX) { h = Math.round(h * MAX / w); w = MAX; } }
+      else { if (h > MAX) { w = Math.round(w * MAX / h); h = MAX; } }
+      canvas.width = w; canvas.height = h;
+      const ctx = canvas.getContext('2d');
+      ctx.filter = 'contrast(1.05) brightness(1.02)';
+      ctx.drawImage(img, 0, 0, w, h);
+      const jpegUrl = canvas.toDataURL('image/jpeg', 0.75);
       imageBase64 = jpegUrl.split(',')[1];
       imageMediaType = 'image/jpeg';
-
       document.getElementById('preview-img').src = jpegUrl;
       document.getElementById('preview-wrap').style.display = 'block';
       document.getElementById('upload-zone').style.display = 'none';
       document.getElementById('analyze-btn').classList.add('visible');
       document.getElementById('result-box').classList.remove('visible');
-      document.getElementById('result-text').textContent = '';
+      stopSpeech();
+      lastResult = '';
+      document.getElementById('float-btn').classList.remove('visible');
+      // Confirmar por voz que la foto está lista
+      setTimeout(() => speakText('Foto cargada. Toca el botón Analizar entorno para obtener la descripción.'), 300);
     };
-    img.src = dataUrl;
+    img.src = ev.target.result;
   };
   reader.readAsDataURL(file);
 }
 
+// ═══════════════════════════════════════════════════════════
+// ANALIZAR
+// ═══════════════════════════════════════════════════════════
+const MODELS = {
+  haiku: 'claude-haiku-4-5-20251001',
+  sonnet: 'claude-sonnet-4-5'
+};
+const PROMPTS = {
+  breve: 'Eres los ojos de una persona ciega. Describe este entorno hablando directamente: dónde estás, qué hay cerca, obstáculos o peligros relevantes. Sin listas. Sin "en la imagen". Máximo 60 palabras.',
+  detallada: 'Eres los ojos de una persona ciega. Describe este entorno hablando directamente como si la guiaras: lugar, elementos principales, personas si las hay, colores dominantes, peligros u obstáculos, algo útil para orientarse. Sin listas. Sin "en la imagen". Máximo 150 palabras.'
+};
+const MAX_TOKENS = { breve: 150, detallada: 380 };
+
 async function analyze() {
   if (!imageBase64) return;
-
-  const aiEnabled = document.getElementById('ai-toggle').checked;
-  const apiKey = document.getElementById('api-key').value.trim();
-
-  document.getElementById('analyze-btn').disabled = true;
-  document.getElementById('loader').classList.add('visible');
-  document.getElementById('result-box').classList.remove('visible');
-
-  if (aiEnabled && apiKey) {
-    await analyzeWithClaude(apiKey);
-  } else {
-    analyzeOffline();
+  const apiKey = getSavedKey();
+  if (!apiKey) {
+    showToast('⚠️ Introduce y guarda tu API key primero', 3000, true);
+    speakText('Necesitas una API key de Claude para analizar imágenes. Introduce tu key en el campo de texto y toca Guardar.');
+    return;
   }
 
-  document.getElementById('loader').classList.remove('visible');
-  document.getElementById('analyze-btn').disabled = false;
-}
-
-async function analyzeWithClaude(apiKey) {
-  const prompt = `Eres los ojos de una persona ciega. Describe esta imagen de forma clara, directa y útil para orientarse en el espacio.
-
-Indica:
-1. Dónde estás — tipo de lugar (interior, exterior, calle, habitación, etc.)
-2. Obstáculos — qué hay y aproximadamente dónde (izquierda, derecha, delante, cerca, lejos)
-3. Peligros — escaleras, bordillos, objetos en el suelo, puertas abiertas
-4. Personas u objetos relevantes
-5. Luz y condiciones generales
-
-Sé breve, claro y concreto. No digas "en la imagen se ve" — habla directamente como si describieras el entorno real a alguien que no puede verlo. Máximo 120 palabras.`;
+  const btn = document.getElementById('analyze-btn');
+  btn.textContent = '⏳ Procesando...';
+  btn.disabled = true;
+  document.getElementById('loader').classList.add('visible');
+  document.getElementById('loader-text').textContent =
+    `fotón en proceso · ${selectedModel === 'haiku' ? 'Haiku' : 'Sonnet'} analizando…`;
+  document.getElementById('result-box').classList.remove('visible', 'is-error');
+  stopSpeech();
 
   try {
     const response = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'x-api-key': apiKey, 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-access': 'true' },
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': apiKey,
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true'
+      },
       body: JSON.stringify({
-        model: 'claude-opus-4-5',
-        max_tokens: 300,
+        model: MODELS[selectedModel],
+        max_tokens: MAX_TOKENS[selectedLength],
         messages: [{
           role: 'user',
           content: [
             { type: 'image', source: { type: 'base64', media_type: imageMediaType, data: imageBase64 } },
-            { type: 'text', text: prompt }
+            { type: 'text', text: PROMPTS[selectedLength] }
           ]
         }]
       })
     });
 
     const data = await response.json();
-    console.log('API response:', JSON.stringify(data));
-    if (data.content && data.content[0] && data.content[0].text) {
-      showResult(data.content[0].text);
-    } else if (data.error) {
-      showResult('Error API: ' + data.error.message);
-    } else {
-      showResult('Error al procesar la imagen. Respuesta: ' + JSON.stringify(data).substring(0, 200));
+
+    if (!response.ok) {
+      throw new Error(data.error?.message || `Error ${response.status}`);
     }
+
+    const description = data.content?.[0]?.text;
+    if (!description) throw new Error('Respuesta vacía del modelo');
+
+    displayResult(description);
+    addToHistory(description, document.getElementById('preview-img').src);
+    lastResult = description;
+    document.getElementById('float-btn').classList.add('visible');
+    // Auto-leer resultado
+    setTimeout(() => speakText(description), 300);
+
   } catch (err) {
-    showResult('Error de conexión. Comprueba tu conexión e inténtalo de nuevo.');
+    const msg = translateError(err.message);
+    displayError(msg);
+    setTimeout(() => speakText(msg), 300);
+  } finally {
+    document.getElementById('loader').classList.remove('visible');
+    btn.textContent = '👁️ Analizar entorno · Analyze environment';
+    btn.disabled = false;
   }
 }
 
-function analyzeOffline() {
-  const el = document.getElementById('result-text');
-  el.innerHTML = '<span style="color:var(--vision);font-weight:600;">👁️ Argira Vision necesita Claude para ver.</span>\n\n' +
-    'Para analizar imágenes necesitas una API key de Claude.\n\n' +
-    '<strong style="color:var(--text);">Cómo obtenerla — es gratis:</strong>\n' +
-    '1. Ve a <a href="https://console.anthropic.com" target="_blank" style="color:var(--vision);">console.anthropic.com</a>\n' +
-    '2. Crea una cuenta\n' +
-    '3. Genera una API key\n' +
-    '4. Pégala arriba y activa Claude Vision\n\n' +
-    '<span style="color:var(--muted);font-size:0.85rem;">Anthropic ofrece créditos gratuitos para empezar.</span>';
-  document.getElementById('result-box').classList.add('visible');
-  document.getElementById('play-btn').style.display = 'none';
-  document.getElementById('speed-wrap').style.display = 'none';
+function translateError(raw) {
+  const r = (raw || '').toLowerCase();
+  if (r.includes('api_key') || r.includes('invalid_api_key') || r.includes('authentication'))
+    return 'La API key no es válida. Ve al panel de configuración, toca Olvidar key e introduce una nueva.';
+  if (r.includes('quota') || r.includes('credit') || r.includes('billing'))
+    return 'Sin créditos disponibles. Revisa tu cuenta en console.anthropic.com';
+  if (r.includes('rate_limit'))
+    return 'Demasiadas solicitudes seguidas. Espera unos segundos e inténtalo de nuevo.';
+  if (r.includes('overloaded'))
+    return 'El servicio está sobrecargado ahora mismo. Inténtalo en unos segundos.';
+  if (r.includes('fetch') || r.includes('network') || r.includes('failed'))
+    return 'Sin conexión a internet. Comprueba tu red e inténtalo de nuevo.';
+  return 'No se pudo analizar la imagen. Inténtalo de nuevo.';
 }
 
-function showResult(text) {
+// ═══════════════════════════════════════════════════════════
+// MOSTRAR RESULTADO / ERROR
+// ═══════════════════════════════════════════════════════════
+function displayResult(text) {
   document.getElementById('result-text').textContent = text;
+  document.getElementById('result-box').classList.remove('is-error');
   document.getElementById('result-box').classList.add('visible');
+  document.getElementById('result-label').textContent = '🔊 Descripción del entorno';
   document.getElementById('play-btn').style.display = 'flex';
-  document.getElementById('speed-wrap').style.display = 'flex';
+}
+
+function displayError(text) {
+  document.getElementById('result-text').textContent = text;
+  document.getElementById('result-box').classList.add('is-error', 'visible');
+  document.getElementById('result-label').textContent = '⚠️ Error en análisis';
+}
+
+// ═══════════════════════════════════════════════════════════
+// TTS
+// ═══════════════════════════════════════════════════════════
+function getVoiceObj() {
+  if (!selectedVoiceURI) return null;
+  return availableVoices.find(v => v.voiceURI === selectedVoiceURI) || null;
+}
+
+function speakText(text) {
+  if (!text || !window.speechSynthesis) return;
+  window.speechSynthesis.cancel();
+  utter = new SpeechSynthesisUtterance(text);
+  const voice = getVoiceObj();
+  if (voice) utter.voice = voice;
+  utter.lang = voice ? voice.lang : 'es-ES';
+  utter.rate = speechRate;
+  utter.onstart = () => {
+    isSpeakingGlobal = true; isPausedGlobal = false;
+    document.getElementById('play-btn').classList.add('playing');
+    document.getElementById('play-btn').style.display = 'none';
+    document.getElementById('pause-btn').style.display = 'flex';
+    document.getElementById('stop-btn').style.display = 'flex';
+    const fb = document.getElementById('float-btn');
+    fb.textContent = '⏹';
+    fb.setAttribute('aria-label', 'Detener lectura');
+  };
+  utter.onend = utter.onerror = resetSpeechUI;
+  window.speechSynthesis.speak(utter);
 }
 
 function speakResult() {
-  if (isSpeaking) return;
   const text = document.getElementById('result-text').textContent;
-  if (!text) return;
+  if (text) speakText(text);
+}
 
-  const speed = parseFloat(document.getElementById('speed').value);
-  speechUtterance = new SpeechSynthesisUtterance(text);
-  speechUtterance.lang = 'es-ES';
-  speechUtterance.rate = speed;
-
-  speechUtterance.onstart = () => {
-    isSpeaking = true;
-    document.getElementById('play-btn').classList.add('playing');
-    document.getElementById('play-btn').textContent = '🔊 Leyendo...';
-    document.getElementById('stop-btn').style.display = 'flex';
-  };
-
-  speechUtterance.onend = () => {
-    isSpeaking = false;
-    document.getElementById('play-btn').classList.remove('playing');
-    document.getElementById('play-btn').innerHTML = '🔊 Leer en voz alta · Read aloud';
-    document.getElementById('stop-btn').style.display = 'none';
-  };
-
-  window.speechSynthesis.speak(speechUtterance);
+function pauseSpeech() {
+  if (!isSpeakingGlobal) return;
+  if (!isPausedGlobal) {
+    window.speechSynthesis.pause();
+    isPausedGlobal = true;
+    document.getElementById('pause-btn').textContent = '▶ Continuar';
+    document.getElementById('pause-btn').setAttribute('aria-label', 'Continuar lectura');
+    document.getElementById('float-btn').classList.add('paused');
+    document.getElementById('float-btn').textContent = '▶';
+  } else {
+    window.speechSynthesis.resume();
+    isPausedGlobal = false;
+    document.getElementById('pause-btn').textContent = '⏸ Pausa';
+    document.getElementById('pause-btn').setAttribute('aria-label', 'Pausar lectura');
+    document.getElementById('float-btn').classList.remove('paused');
+    document.getElementById('float-btn').textContent = '⏹';
+  }
 }
 
 function stopSpeech() {
   window.speechSynthesis.cancel();
-  isSpeaking = false;
-  document.getElementById('play-btn').classList.remove('playing');
-  document.getElementById('play-btn').innerHTML = '🔊 Leer en voz alta · Read aloud';
-  document.getElementById('stop-btn').style.display = 'none';
+  resetSpeechUI();
 }
 
-function updateSpeed() {
-  const val = document.getElementById('speed').value;
-  document.getElementById('speed-val').textContent = val + 'x';
-  if (isSpeaking) {
-    stopSpeech();
-    speakResult();
+function resetSpeechUI() {
+  isSpeakingGlobal = false; isPausedGlobal = false;
+  document.getElementById('play-btn').classList.remove('playing');
+  document.getElementById('play-btn').style.display = 'flex';
+  document.getElementById('pause-btn').style.display = 'none';
+  document.getElementById('pause-btn').textContent = '⏸ Pausa';
+  document.getElementById('stop-btn').style.display = 'none';
+  const fb = document.getElementById('float-btn');
+  fb.classList.remove('paused');
+  fb.textContent = '🔊';
+  fb.setAttribute('aria-label', 'Repetir último análisis en voz alta');
+}
+
+function toggleFloatSpeak() {
+  if (isSpeakingGlobal && !isPausedGlobal) { stopSpeech(); }
+  else if (isPausedGlobal) { pauseSpeech(); }
+  else if (lastResult) { speakText(lastResult); }
+  else { showToast('Sin análisis previo', 1500); }
+}
+
+// ═══════════════════════════════════════════════════════════
+// COPIAR
+// ═══════════════════════════════════════════════════════════
+async function copyResult() {
+  const text = document.getElementById('result-text').textContent;
+  if (!text) return;
+  try {
+    await navigator.clipboard.writeText(text);
+    showToast('📋 Copiado al portapapeles', 2000);
+    speakText('Descripción copiada al portapapeles.');
+  } catch {
+    showToast('No se pudo copiar', 2000, true);
   }
 }
 
+// ═══════════════════════════════════════════════════════════
+// LECTOR DE INTERFAZ (Botón A)
+// ═══════════════════════════════════════════════════════════
+function readInterface() {
+  const hasKey = !!getSavedKey();
+  const hasImage = imageBase64 !== null;
+  const hasResult = lastResult !== '';
+  const modelLabel = selectedModel === 'haiku' ? 'Haiku, rápido' : 'Sonnet, preciso';
+  const lengthLabel = selectedLength === 'breve' ? 'breve' : 'detallada';
+
+  let parts = [`Argira Vision versión cero punto cinco.`];
+  parts.push(`Modelo: ${modelLabel}. Descripción: ${lengthLabel}.`);
+  parts.push(hasKey ? 'Claude Vision activo.' : 'Claude Vision no configurado. Introduce tu API key.');
+  if (!hasImage) parts.push('Estado: esperando foto. Toca el área central para subir una imagen.');
+  else if (!hasResult) parts.push('Estado: foto cargada. Toca Analizar entorno para obtener descripción.');
+  else parts.push(`Estado: análisis completado. ${lastResult}`);
+  parts.push('El botón circular abajo a la derecha repite el último análisis.');
+
+  speakText(parts.join(' '));
+}
+
+// ═══════════════════════════════════════════════════════════
+// GUÍA GENERAL (Botón ?)
+// ═══════════════════════════════════════════════════════════
+function readGuide() {
+  speakText([
+    'Guía de uso de Argira Vision.',
+    'Para empezar, necesitas una API key de Anthropic. Escucha las instrucciones tocando el botón correspondiente.',
+    'Una vez configurada, la key se guarda automáticamente y no tendrás que volver a introducirla.',
+    'Toca el área central para subir una foto desde tu cámara o galería.',
+    'Cuando la foto esté cargada, escucharás una confirmación por voz.',
+    'Toca el botón Analizar entorno. El resultado se leerá automáticamente.',
+    'El botón circular en la esquina inferior derecha repite la descripción en cualquier momento.',
+    'En Configuración puedes elegir el modelo, la longitud de descripción, la voz y la velocidad.',
+    'El historial guarda los últimos diez análisis. Toca cualquiera para escucharlo sin repetir la llamada.'
+  ].join(' '));
+}
+
+// ═══════════════════════════════════════════════════════════
+// GUÍA DE LA KEY (para invidentes)
+// ═══════════════════════════════════════════════════════════
+function readKeyGuide() {
+  speakText([
+    'Instrucciones para obtener la API key de Claude.',
+    'Paso uno: Abre el navegador y ve a console punto anthropic punto com.',
+    'Paso dos: Toca el botón Registrarse o Sign up y crea una cuenta con tu correo electrónico.',
+    'Paso tres: Una vez dentro, busca el menú API Keys en la barra lateral o en tu perfil.',
+    'Paso cuatro: Toca Crear nueva key o Create new key. Se generará un código que empieza por sk-ant-.',
+    'Paso cinco: Copia ese código completo.',
+    'Paso seis: Vuelve a Argira Vision. Toca el campo de texto que dice: pega tu API key aquí.',
+    'Paso siete: Pega el código y toca el botón Guardar.',
+    'Listo. La key quedará guardada en tu dispositivo y no tendrás que volver a introducirla.',
+    'Si necesitas ayuda adicional, pide ayuda a alguien de confianza para los pasos en console.anthropic.com.'
+  ].join(' '));
+}
+
+// ═══════════════════════════════════════════════════════════
+// HISTORIAL — localStorage
+// ═══════════════════════════════════════════════════════════
+function getHistory() {
+  return JSON.parse(localStorage.getItem('argira_history') || '[]');
+}
+
+function toggleHistory() {
+  const sec = document.getElementById('history-section');
+  const visible = sec.style.display === 'block';
+  sec.style.display = visible ? 'none' : 'block';
+  if (!visible) renderHistory();
+}
+
+function renderHistory() {
+  const items = getHistory();
+  const container = document.getElementById('history-list');
+  container.innerHTML = '';
+  if (!items.length) {
+    container.innerHTML = '<div style="padding:14px;color:var(--muted);font-size:0.8rem;text-align:center" role="listitem">📭 Aún no hay análisis guardados</div>';
+    return;
+  }
+  items.slice(0, 10).forEach((item, idx) => {
+    const div = document.createElement('div');
+    div.className = 'history-item';
+    div.setAttribute('role', 'listitem');
+    div.setAttribute('tabindex', '0');
+    div.setAttribute('aria-label', `Análisis ${idx + 1}. ${item.date}. ${item.desc.substring(0, 60)}`);
+    div.innerHTML = `
+      <img class="history-thumb" src="${item.thumb}" alt="Miniatura del análisis ${idx + 1}">
+      <div class="history-info">
+        <div class="history-date">${item.date}</div>
+        <div class="history-desc">${item.desc.substring(0, 80)}${item.desc.length > 80 ? '…' : ''}</div>
+      </div>
+      <button class="history-play" aria-label="Escuchar análisis ${idx + 1}">🔊</button>
+    `;
+    div.querySelector('.history-play').addEventListener('click', (e) => {
+      e.stopPropagation();
+      lastResult = item.desc;
+      document.getElementById('result-text').textContent = item.desc;
+      document.getElementById('result-label').textContent = '🔊 Descripción del entorno';
+      document.getElementById('result-box').classList.remove('is-error');
+      document.getElementById('result-box').classList.add('visible');
+      document.getElementById('float-btn').classList.add('visible');
+      speakText(item.desc);
+    });
+    div.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') div.querySelector('.history-play').click();
+    });
+    container.appendChild(div);
+  });
+}
+
+async function addToHistory(description, imageDataUrl) {
+  let thumb = imageDataUrl;
+  if (imageDataUrl && imageDataUrl.length > 30000) thumb = await compressThumbnail(imageDataUrl);
+  const history = getHistory();
+  history.unshift({ id: Date.now(), desc: description, thumb, date: new Date().toLocaleString('es-ES') });
+  while (history.length > 10) history.pop();
+  localStorage.setItem('argira_history', JSON.stringify(history));
+  renderHistory();
+}
+
+function compressThumbnail(dataUrl) {
+  return new Promise((resolve) => {
+    const img = new Image();
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      const scale = 180 / img.width;
+      canvas.width = 180; canvas.height = img.height * scale;
+      canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
+      resolve(canvas.toDataURL('image/jpeg', 0.6));
+    };
+    img.src = dataUrl;
+  });
+}
+
+function clearHistory() {
+  localStorage.removeItem('argira_history');
+  renderHistory();
+  showToast('🧹 Historial borrado', 1500);
+  speakText('Historial borrado.');
+}
+
+// ═══════════════════════════════════════════════════════════
+// RESET
+// ═══════════════════════════════════════════════════════════
 function resetAll() {
   stopSpeech();
-  imageBase64 = null;
+  imageBase64 = null; lastResult = '';
   document.getElementById('file-input').value = '';
   document.getElementById('preview-wrap').style.display = 'none';
   document.getElementById('preview-img').src = '';
   document.getElementById('upload-zone').style.display = 'flex';
   document.getElementById('analyze-btn').classList.remove('visible');
-  document.getElementById('result-box').classList.remove('visible');
+  document.getElementById('analyze-btn').textContent = '👁️ Analizar entorno · Analyze environment';
+  document.getElementById('result-box').classList.remove('visible', 'is-error');
   document.getElementById('result-text').textContent = '';
+  document.getElementById('float-btn').classList.remove('visible');
 }
+
+// ═══════════════════════════════════════════════════════════
+// TOAST
+// ═══════════════════════════════════════════════════════════
+function showToast(msg, duration = 2000, isError = false) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.toggle('error', isError);
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), duration);
+}
+
+// ═══════════════════════════════════════════════════════════
+// ARRANQUE
+// ═══════════════════════════════════════════════════════════
+window.addEventListener('DOMContentLoaded', init);
 </script>
 </body>
 </html>
